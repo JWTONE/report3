@@ -24,8 +24,23 @@ def article_list(request):
 
 
 
-@api_view(["GET"])
+@api_view(["GET", "PUT", "DELETE"])
 def article_detail(request, pk):
-    article = get_object_or_404(Article, pk=pk)
-    serializer = ArticleSerializer(article)
-    return Response(serializer.data)
+    if request.method == "GET":
+        article = get_object_or_404(Article, pk=pk)
+        serializer = ArticleSerializer(article)
+        return Response(serializer.data)
+
+    elif request.method == "PUT":
+        article = get_object_or_404(Article, pk=pk)
+        serializer = ArticleSerializer(article, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data)
+    
+    elif request.method == "DELETE":
+        article.delete()
+        data = {"delete": f"Article({pk}) is deleted."}
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
